@@ -23,7 +23,9 @@ public:
 
 private slots:
     void on_btn_add_clicked();
-    void on_pushButton_clicked();
+    void on_actionSave_2_triggered();
+    void on_btn_clear_clicked();
+    void on_actionOpen_2_triggered();
 };
 
 

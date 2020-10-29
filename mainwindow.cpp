@@ -1,6 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QMessageBox>
+#include <QFileDialog>
+#include <QTextStream>
+#include <QFile>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -9,8 +12,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     this->table = this->ui->tab_warenliste;
-
-
 
     this->setTabOrder(this->ui->ledit_warennr, this->ui->ledit_bezeichnung);
     this->setTabOrder(this->ui->ledit_bezeichnung, this->ui->ledit_preis);
@@ -66,7 +67,7 @@ void MainWindow::on_btn_add_clicked()
     }
 }
 
-void MainWindow::on_pushButton_clicked()
+void MainWindow::on_btn_clear_clicked()
 {
     //erstellen der Nachrichten Box
     auto mb_nachricht = new QMessageBox();
@@ -84,7 +85,7 @@ void MainWindow::on_pushButton_clicked()
     {
     case QMessageBox::Yes:
 
-        this->table->clear();
+        //this->table->clear();
         this->table->setRowCount(0);
 
         break;
@@ -93,5 +94,58 @@ void MainWindow::on_pushButton_clicked()
 
         break;
     }
+
+}
+
+void MainWindow::on_actionSave_2_triggered()
+{
+    QFile file("Warenliste.txt");
+
+
+    if(file.open(QFile::WriteOnly | QFile::Truncate | QFile::Text))
+    {
+        QTextStream out(&file);
+
+        for(int i = 0; i < this->table->rowCount(); i++)
+        {
+            for(int n = 0; n < 3; n++)
+            {
+                out << this->table->item(i, n) << ", ";
+            }
+            out << "\n";
+        }
+        file.flush();
+        file.close();
+    }
+}
+
+void MainWindow::on_actionOpen_2_triggered()
+{
+
+    auto filetable = QFileDialog::getOpenFileName(this, tr("Open Text"), "" , tr("Text files (*.txt)"));
+
+    //Liste aus Datei laden
+    QFile file(filetable);
+    //Wenn öffnen der Datei erfolgreich war
+    if(file.open(QFile::ReadOnly | QFile::Text))
+    {
+        int i = 0;
+        //Liste Löschen
+        this->table->setRowCount(0);
+        //Lese aus Datei in Liste
+        QTextStream in(&file);
+        while(!in.atEnd())
+        {
+            this->table->setRowCount(i);
+            for(int n = 0; n < 3; n++)
+            {
+                auto newItem = new QTableWidgetItem(in.readLine().trimmed());
+                this->table->setItem(i, n, newItem);
+            }
+            i++;
+        }
+        //file schließen
+        file.close();
+    }//if ende
 
 }
